@@ -2,25 +2,27 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.IO;
 
 namespace Wordle
 {
     public partial class MainWindow : Window
     {
-        private string secretWord = "HELLO"; //Hardcode hemmeligt ord for at validere at programmet virker.
+        private string secretWord; //Hardcode hemmeligt ord for at validere at programmet virker.
         private int currentRow = 0; //Holder styr på hvilken rækker brugeren er på.
         private int currentColumn = 0; //Holder styr på hvilken kolonne brugeren er på.
-
-        private TextBox[,] textBoxes;
+        HashSet<string> wordList = new HashSet<string>();
+        private TextBox[,] textBoxes; //Kommenter ud
         public MainWindow()
         {
             InitializeComponent();
+            loadWords();
             this.PreviewKeyDown += HandleKeyPress; //Opfanger hvad der bliver tastet på tastaturet.
 
             // Initialisere hardcoded TextBox referencer
             textBoxes = new TextBox[,] //2D array der lagre referencer til TextBox elementerne i programmets UI. Hver 'TextBox" representerer et bogstav i spillet.
             {
-                { Textinput0_0, Textinput0_1, Textinput0_2, Textinput0_3, Textinput0_4 },
+                { Textinput0_0, Textinput0_1, Textinput0_2, Textinput0_3, Textinput0_4 }, //Kommenter ud
                 { Textinput1_0, Textinput1_1, Textinput1_2, Textinput1_3, Textinput1_4 },
                 { Textinput2_0, Textinput2_1, Textinput2_2, Textinput2_3, Textinput2_4 },
                 { Textinput3_0, Textinput3_1, Textinput3_2, Textinput3_3, Textinput3_4 },
@@ -29,9 +31,58 @@ namespace Wordle
             };
         }
 
+        public void loadWords()
+        {
+            string tempWord;
+            Random rndNum = new Random();
+            int element;
+
+            try
+            {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string wordsFilePath = Path.Combine(basePath, "Assets", "words.txt");
+                string[] allWords = File.ReadAllLines(wordsFilePath);
+
+                foreach (string temp in allWords)
+                {
+                    tempWord = temp.Trim();
+                    tempWord = tempWord.ToUpperInvariant();
+                    wordList.Add(tempWord);
+                }
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show("Problem with th1e Wordle file. 'words.txt");
+            }
+
+
+            element = rndNum.Next(0, wordList.Count);
+            secretWord = wordList.ElementAt(element);
+
+            MessageBox.Show("The word is " + secretWord); //Besked omkring hvilket ord der er rigtigt for at kunne teste programmet.
+
+            try
+            {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string validWordsFilePath = Path.Combine(basePath, "Assets", "words.txt");
+                string[] validWords = File.ReadAllLines(validWordsFilePath);
+
+                foreach (string temp in validWords)
+                {
+                    tempWord = temp.Trim();
+                    tempWord = tempWord.ToUpperInvariant();
+                    wordList.Add(tempWord);
+                }
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show("Error loading valid words from 'words.txt.");
+            }
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e) //Metoden kaldes hvis en knap trykkes på i programmets UI. Tak intellisense :D
         {
-            if (sender is Button button) // Hvis "sender" (en knap) er en knap, valideres inputtet og instansen af knappen tildeles til variablen "button"
+            if (sender is Button button) // Hvis "sender" (en knap) er en knap, valideres inputtet og instansen af knappen tildeles til variablen "button".
             {
                 string buttonContent = button.Content.ToString();
 
@@ -50,6 +101,7 @@ namespace Wordle
             }
         }
 
+        //Den mest besværlige del udover at loade ordlisten.
         private void HandleKeyPress(object sender, KeyEventArgs e) //Undersøger om knappen der trykkes på holder sig inden for de 26 bogstaver i det engelske alfabet sammen med koden ovenover.
         {
             if (e.Key >= Key.A && e.Key <= Key.Z && currentColumn < 5) //Der kan tastes alt fra A til Z og så længe brugeren er inden for de 5 kasser i en række.
@@ -92,28 +144,52 @@ namespace Wordle
                 return;
             }
 
-            bool isCorrect = true; //Hjæper med at holde styr på om gættet er korrekt.
-
-            for (int i = 0; i < 5; i++) //Validerer hvert bogstav i ordet.
+            string userguess = "";
+            for (int i = 0; i < 5; i++)
             {
-                string guessLetter = textBoxes[currentRow, i].Text.ToUpper(); //Tager bogstavet i (currentRow, i) og konvertere det til "store" bogstaver, hvilket sørger for at sammenligningen ikke fejler grundet små bogstaver tidligere i koden fx. fra ordlisten eller hvad end der er hardcoded som det rigtige ord.
-                if (guessLetter == secretWord[i].ToString()) //Hvis bogstavet i gættet svarer til det respektive bogstav i det hemmelige ord i samme position (==), så
+                userguess += textBoxes[currentRow, i].Text.ToUpper();
+            }
+
+            if (!wordList.Contains(userguess))
+            {
+                MessageBox.Show("ikke gyldigt ord");
+                return;
+            }
+
+            bool[] matchedInSecret = new bool[5];
+            bool[] matchedInGuess = new bool[5];
+
+            for (int i = 0; i < 5; i++) {
+                if (userguess[i] == secretWord[i])
                 {
-                    textBoxes[currentRow, i].Background = new SolidColorBrush(Colors.Green); //valideres bogstavet med en grøn farve da betingelsen i if sætningen er sand.
-                }
-                else if (secretWord.Contains(guessLetter)) //Eller hvis bogstavet findes i ordet (Contains(guessletter)),
-                {
-                    textBoxes[currentRow, i].Background = new SolidColorBrush(Colors.Yellow); //bliver farven gul.
-                    isCorrect = false;//False fordi betingelsen ikke er opfyldt. Vi oprerere kun med sandt og falsk (boolean) og hvis ikke det er sandt, så er det falsk, men vi har formateret den falske betingelse her på en måde så den visuelt anses som at være delvist rigtig selvom programmet anser det for at være lige så falsk som else sætningen.
-                }
-                else //Ellers
-                {
-                    textBoxes[currentRow, i].Background = new SolidColorBrush(Colors.Gray); //bliver farven grå.
-                    isCorrect = false; 
+                    textBoxes[currentRow, i].Background = new SolidColorBrush(Colors.Green);
+                    matchedInSecret[i] = true;
+                    matchedInGuess[i] = true;
                 }
             }
 
-            if (isCorrect) //Efter programmet evaluere alle bogstaverne i en række, hvis isCorrect stadig er sand/true, så
+            for (int i = 0; i < 5; i++)
+            {
+                if (!matchedInSecret[i])
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        if (!matchedInSecret[j] && userguess[i] == secretWord[j])
+                        {
+                            textBoxes[currentRow, i].Background = new SolidColorBrush(Colors.Yellow);
+                            matchedInSecret[j] = true;
+                            break;
+                        }
+                    }
+                }
+            
+                if (((SolidColorBrush)textBoxes[currentRow, i].Background).Color == Colors.White)
+                {
+                    textBoxes[currentRow, i].Background = new SolidColorBrush(Colors.Gray);
+                }
+            }
+
+            if (userguess == secretWord) //Efter programmet evaluere alle bogstaverne i en række, hvis isCorrect stadig er sand/true, så
             {
                 MessageBox.Show("Tillykke!! Du gættede ordet! :D"); //så vises en sejrsmeddelelse og
                 ResetGame(); //spillet nulstilles.
@@ -125,7 +201,7 @@ namespace Wordle
 
             if (currentRow >= 6) //Hvis currentRow er større eller lig med 6 (7'ende linje da det svarer til index 6), så
             {
-                MessageBox.Show($"Game over! Det rigtige ord var {secretWord}."); //vises en nederlagsmeddelelse og
+                MessageBox.Show($"Game over! Det rigtige ord var '{secretWord}'."); //vises en nederlagsmeddelelse og
                 ResetGame(); //spillet nulstilles.
             }
         }
@@ -140,6 +216,7 @@ namespace Wordle
 
             currentRow = 0; //Programmet går tilbage til index 0 i rækkerne.
             currentColumn = 0; //Programmet går tilbage til index 0 i kolonnerne.
+            loadWords();
         }
     }
 }
