@@ -18,7 +18,7 @@
         <!-- Spillets main grid til text inputs -->
         <Grid Margin="90,126,90,273">
             <Grid.RowDefinitions>
-                <!-- Row definitions der opretter gitter looked -->
+                <!-- Row definitions der opretter gitter look'et -->
                 <RowDefinition Height="*" />
                 <RowDefinition Height="5" />
                 <RowDefinition Height="*" />
@@ -32,7 +32,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <!-- Kolonne defintions der opretter gitter looked -->
+                <!-- Kolonne defintions der opretter gitter look'et -->
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" />

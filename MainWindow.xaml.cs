@@ -16,11 +16,11 @@ namespace Wordle
         public MainWindow()
         {
             InitializeComponent();
-            LoadWords();//kører loadWords så spillet altid generer et ord når man trykker play
+            LoadWords();//kører loadWords så spillet altid generer et ord når programmet starter.
             this.PreviewKeyDown += HandleKeyPress; //Opfanger hvad der bliver tastet på tastaturet.
 
             // Initialisere hardcoded TextBox referencer
-            textBoxes = new TextBox[,] //2D array der lagre referencer til TextBox elementerne i programmets UI. Hver 'TextBox" representerer et bogstav i spillet.
+            textBoxes = new TextBox[,] //2D array der lagre referencer til TextBox elementerne i programmets UI. Hver 'TextBox' representerer et bogstav i spillet.
             {
                 { Textinput0_0, Textinput0_1, Textinput0_2, Textinput0_3, Textinput0_4 },
                 { Textinput1_0, Textinput1_1, Textinput1_2, Textinput1_3, Textinput1_4 },
@@ -61,23 +61,6 @@ namespace Wordle
 
             MessageBox.Show("The word is " + secretWord); //Besked omkring hvilket ord der er rigtigt for at kunne teste programmet.
 
-            try
-            {
-                string basePath = AppDomain.CurrentDomain.BaseDirectory;//henter basisdirektioriet for den nuværende applikation.
-                string validWordsFilePath = Path.Combine(basePath, "Assets", "words.txt");// kombinerer basisstien med filens placering (assets/words.txt).
-                string[] validWords = File.ReadAllLines(validWordsFilePath);//læser alle linjerne fra filen og gemmer dem i en array.
-
-                foreach (string temp in validWords)
-                {
-                    tempWord = temp.Trim();//fjerner eventuelle foranstillede eller efterfølgende mellemrum fra ordet.
-                    tempWord = tempWord.ToUpperInvariant();//konverterer ordet til store bogstaver.
-                    wordList.Add(tempWord);//Tilføjer det formaterede ord til wordList samlingen.
-                }
-            }
-            catch (IOException)//fanger hver IOException, der kan opstå under læsning af filen.
-            {
-                MessageBox.Show("Error loading valid words from 'words.txt.");//Besked omkring hvilket ord der er rigtigt for at kunne teste programmet.
-            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e) //Metoden kaldes hvis en knap trykkes på i programmets UI. Tak intellisense :D
@@ -112,7 +95,7 @@ namespace Wordle
             {
                 RemoveLetter();
             }
-            else if (e.Key == Key.Enter) //Evaluere om gættet er korrekt. se længere nede.
+            else if (e.Key == Key.Enter) //Evaluere om gættet er korrekt. Se længere nede.
             {
                 ValidateGuess();
             }
