@@ -52,9 +52,8 @@ namespace Wordle
             }
             catch (IOException)//fanger hver IOException, der kan opstå under læsning af filen.
             {
-                MessageBox.Show("Problem with th1e Wordle file. 'words.txt");//fejlmeddelse for at kunne identificere hvor fejlen opstod.
+                MessageBox.Show("Problem with th1e Wordle file. 'words.txt'");//fejlmeddelse for at kunne identificere hvor fejlen opstod.
             }
-
 
             element = rndNum.Next(0, wordList.Count);//generer et tilfældigt tal imellem 0 og længden på listen, på denne måde er koden dynamisk hvis man opdaterede listen.
             secretWord = wordList.ElementAt(element);//Sætter secretWord til det tilfældige valgte ord
